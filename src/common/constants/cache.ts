@@ -1,0 +1,2 @@
+export const TEMPO_CACHE_TRINTA_SEGUNDOS = 30;
+export const TEMPO_CACHE_UM_MINUTO = 60 * 1000;

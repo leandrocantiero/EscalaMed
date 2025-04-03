@@ -1,0 +1,163 @@
+{
+    "info": {
+      "name": "Users API Tests",
+      "description": "Testes para UsersController",
+      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+      {
+        "name": "Users Endpoints",
+        "item": [
+          {
+            "name": "Criar usuário",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{auth_token}}",
+                  "type": "text"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"firstName\": \"João\",\n  \"lastName\": \"Silva\",\n  \"email\": \"joao.silva@example.com\",\n  \"password\": \"senha123\"\n}",
+                "options": {
+                  "raw": {
+                    "language": "json"
+                  }
+                }
+              },
+              "url": {
+                "raw": "{{base_url}}/users/create",
+                "host": ["{{base_url}}"],
+                "path": ["users", "create"]
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "Listar usuários",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{auth_token}}",
+                  "type": "text"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"isAtivo\": true\n}",
+                "options": {
+                  "raw": {
+                    "language": "json"
+                  }
+                }
+              },
+              "url": {
+                "raw": "{{base_url}}/users/find",
+                "host": ["{{base_url}}"],
+                "path": ["users", "find"]
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "Buscar usuário por ID",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{auth_token}}",
+                  "type": "text"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/users/find-one/1",
+                "host": ["{{base_url}}"],
+                "path": ["users", "find-one", "1"]
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "Atualizar usuário",
+            "request": {
+              "method": "PUT",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{auth_token}}",
+                  "type": "text"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"firstName\": \"João\",\n  \"lastName\": \"Silva Updated\",\n  \"email\": \"joao.silva@example.com\",\n  \"password\": \"novaSenha123\"\n}",
+                "options": {
+                  "raw": {
+                    "language": "json"
+                  }
+                }
+              },
+              "url": {
+                "raw": "{{base_url}}/users/edit/1",
+                "host": ["{{base_url}}"],
+                "path": ["users", "edit", "1"]
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "Remover usuário",
+            "request": {
+              "method": "DELETE",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{auth_token}}",
+                  "type": "text"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/users/remove/4",
+                "host": ["{{base_url}}"],
+                "path": ["users", "remove", "4"]
+              }
+            },
+            "response": []
+          }
+        ]
+      }
+    ],
+    "variable": [
+      {
+        "key": "base_url",
+        "value": "http://localhost:3000"
+      },
+      {
+        "key": "auth_token",
+        "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZmlyc3ROYW1lIjoidGVzdGUiLCJsYXN0TmFtZSI6ImRhIHNpbHRhIiwiZW1haWwiOiJhQGEuY29tIiwiaXNBY3RpdmUiOnRydWUsImlhdCI6MTc0Mjk1MDYwNSwiZXhwIjoxMDAwMTc0Mjk1MDYwNH0.7OyJanu0eWLGPOuQ2afnZxi6P1IqDbwmnCqubaY1_3k"
+      }
+    ],
+    "event": [
+      {
+        "listen": "test",
+        "script": {
+          "exec": [
+            "// Armazena o token após login",
+            "if (pm.response.code === 200 || pm.response.code === 201) {",
+            "    const token = pm.response.json().accessToken;",
+            "    if (token) {",
+            "        pm.collectionVariables.set(\"auth_token\", token);",
+            "    }",
+            "}"
+          ],
+          "type": "text/javascript"
+        }
+      }
+    ]
+  }
