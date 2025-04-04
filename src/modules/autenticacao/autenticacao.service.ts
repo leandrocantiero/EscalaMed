@@ -34,9 +34,14 @@ export class AutenticacaoService {
     };
   }
 
-  async validarToken(token: string): Promise<any> {
-    return this.jwtService.verifyAsync(token, {
-      secret: process.env.JWT_SECRET,
-    });
+  async validarToken(token: string): Promise<boolean> {
+    try {
+      return !!(await this.jwtService.verifyAsync(token, {
+        secret: process.env.JWT_SECRET,
+      }));
+    } catch (erro) {
+      console.log(erro);
+      return false;
+    }
   }
 }

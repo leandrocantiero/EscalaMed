@@ -10,15 +10,18 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { Usuario } from 'src/modules/usuarios/entities/usuario.entity';
 import { UsuarioService } from 'src/modules/usuarios/usuario.service';
 import { UsuarioDto } from './dtos/usuario.dto';
-import { UsuarioFiltroDto } from './dtos/usuario.filter.dto';
+import { UsuarioFiltroDto } from './dtos/usuario-filtro.dto';
 import { AuthGuard } from '../../common/guards/auth.guard';
 import { Role } from 'src/common/constants/roles';
 import { FileInterceptor } from '@nestjs/platform-express';
 import multerConfig from 'src/config/multer-config';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { ContextInterceptor } from 'src/common/interceptors/context.interceptor';
 
+@ApiBearerAuth('JWT-auth')
+@UseInterceptors(ContextInterceptor)
 @Controller('usuarios')
 export class UsuarioController {
   constructor(private readonly usuarioService: UsuarioService) {}

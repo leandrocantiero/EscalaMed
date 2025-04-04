@@ -1,0 +1,35 @@
+import {
+  CallHandler,
+  ExecutionContext,
+  NestInterceptor,
+  Injectable,
+} from '@nestjs/common';
+import { Observable } from 'rxjs';
+import { Context } from '../storage/context';
+import { StorageDto } from '../storage/dtos/storage.dto';
+
+@Injectable()
+export class ContextInterceptor implements NestInterceptor {
+  constructor(private context: Context) {}
+
+  intercept(
+    executionContext: ExecutionContext,
+    next: CallHandler,
+  ): Observable<any> | Promise<Observable<any>> {
+    const request = executionContext.switchToHttp().getRequest();
+
+    const store: StorageDto = {
+      usuario: request['usuario'],
+    };
+
+    return new Observable((observer) => {
+      this.context.runWith(store, () => {
+        next.handle().subscribe({
+          next: (res) => observer.next(res),
+          error: (error) => observer.error(error),
+          complete: () => observer.complete(),
+        });
+      });
+    });
+  }
+}

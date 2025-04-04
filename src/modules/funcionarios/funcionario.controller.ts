@@ -7,13 +7,18 @@ import {
   Post,
   Put,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AuthGuard } from '../../common/guards/auth.guard';
-import { FiltroDto } from 'src/common/dtos/filter.dto';
+import { FiltroDto } from 'src/common/dtos/filtro.dto';
 import { FuncionarioDto } from './dtos/funcionario.dto';
 import { Funcionario } from './entities/funcionario.entity';
 import { FuncionarioService } from './funcionario.service';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { ContextInterceptor } from 'src/common/interceptors/context.interceptor';
 
+@ApiBearerAuth('JWT-auth')
+@UseInterceptors(ContextInterceptor)
 @Controller('funcionarios')
 export class FuncionarioController {
   constructor(private readonly funcionarioService: FuncionarioService) {}

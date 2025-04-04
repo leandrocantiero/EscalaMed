@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { EmpresaContext } from '../storage/empresa.storage';
+import { Context } from '../storage/context';
+import { StorageDto } from '../storage/dtos/storage.dto';
 
 @Injectable()
 export class BaseService {
-  protected getempresaId(): number {
-    const empresaId = EmpresaContext.getempresaId();
-    if (!empresaId) throw new Error('empresaId não definido!');
+  constructor(protected context: Context) {}
 
-    return parseInt(empresaId);
+  protected getEmpresaId(): number {
+    const storage = this.context.get<StorageDto>();
+    return storage.usuario?.empresaId;
   }
 }

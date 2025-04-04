@@ -5,19 +5,21 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Especialidade } from './entities/especialidade.entity';
-import { Repository } from 'typeorm';
-import { FiltroDto } from 'src/common/dtos/filter.dto';
+import { Repository, SelectQueryBuilder } from 'typeorm';
+import { FiltroDto } from 'src/common/dtos/filtro.dto';
 import { EspecialidadeDto } from './dtos/especialidade.dto';
 import { BaseService } from 'src/common/services/base.service';
-import { plainToClass } from 'class-transformer';
+import { plainToClass, plainToInstance } from 'class-transformer';
+import { Context } from 'src/common/storage/context';
 
 @Injectable()
 export class EspecialidadeService extends BaseService {
   constructor(
     @InjectRepository(Especialidade)
     private especialidadeRepository: Repository<Especialidade>,
+    protected context: Context,
   ) {
-    super();
+    super(context);
   }
 
   async criar(request: EspecialidadeDto): Promise<Especialidade> {
@@ -42,22 +44,33 @@ export class EspecialidadeService extends BaseService {
   }
 
   async obterTodos(filter: FiltroDto): Promise<EspecialidadeDto[]> {
-    const queryBuilder =
-      this.especialidadeRepository.createQueryBuilder('speciality');
+    const queryBuilder = this.especialidadeRepository
+      .createQueryBuilder('especialiadade')
+      .select([
+        'especialiadade.id',
+        'especialiadade.nome',
+        'especialiadade.descricao',
+        'especialiadade.empresaId',
+      ])
+      .where('especialiadade.empresaId = :empresaId', {
+        empresaId: this.getEmpresaId(),
+      });
 
-    queryBuilder.select(['id', 'nome', 'description']);
+    this.aplicarFiltros(queryBuilder, filter);
 
+    const itens = await queryBuilder.getMany();
+    return plainToInstance(EspecialidadeDto, itens);
+  }
+
+  private aplicarFiltros(
+    queryBuilder: SelectQueryBuilder<Especialidade>,
+    filter: FiltroDto,
+  ): void {
     if (filter?.nome) {
-      queryBuilder.andWhere('speciality.nome LIKE :nome', {
+      queryBuilder.andWhere('especialiadade.nome LIKE :nome', {
         nome: `%${filter.nome}%`,
       });
     }
-
-    queryBuilder.where({ empresaId: this.getempresaId() });
-
-    return (await queryBuilder.getMany()).map((i) =>
-      plainToClass(EspecialidadeDto, i),
-    );
   }
 
   async obterPorId(id: number): Promise<any> {

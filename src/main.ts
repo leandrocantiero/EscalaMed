@@ -19,8 +19,8 @@ async function bootstrap() {
         type: 'http',
         scheme: 'bearer',
         bearerFormat: 'JWT',
-        name: 'JWT',
-        description: 'Insira o token JWT',
+        name: 'Authorization',
+        description: 'Insira o token JWT no formato: Bearer <token>',
         in: 'header',
       },
       'JWT-auth', // Este nome é usado para referenciar o esquema

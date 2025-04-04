@@ -4,20 +4,25 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { FiltroDto } from 'src/common/dtos/filter.dto';
+import { Repository, SelectQueryBuilder } from 'typeorm';
+import { FiltroDto } from 'src/common/dtos/filtro.dto';
 import { Empresa } from './entities/empresa.entity';
 import { EmpresaDto } from './dtos/empresa.dto';
-import { plainToClass } from 'class-transformer';
+import { plainToClass, plainToInstance } from 'class-transformer';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Context } from 'src/common/storage/context';
+import { BaseService } from 'src/common/services/base.service';
 
 @Injectable()
-export class EmpresaService {
+export class EmpresaService extends BaseService {
   constructor(
     @InjectRepository(Empresa)
     private empresaRepository: Repository<Empresa>,
     private eventEmitter: EventEmitter2,
-  ) {}
+    protected context: Context,
+  ) {
+    super(context);
+  }
 
   async criar(request: EmpresaDto): Promise<Empresa> {
     if (await this.obterPorCnpj(request.cnpj)) {
@@ -47,19 +52,31 @@ export class EmpresaService {
   }
 
   async obterTodos(filter: FiltroDto): Promise<EmpresaDto[]> {
-    const queryBuilder = this.empresaRepository.createQueryBuilder('empresa');
+    const queryBuilder = this.empresaRepository
+      .createQueryBuilder('empresa')
+      .select([
+        'empresa.id',
+        'empresa.nome',
+        'empresa.email',
+        'empresa.cnpj',
+        'empresa.empresaId',
+      ]);
 
-    queryBuilder.select(['id', 'nome', 'cnpj']);
+    this.aplicarFiltros(queryBuilder, filter);
 
+    const itens = await queryBuilder.getMany();
+    return plainToInstance(EmpresaDto, itens);
+  }
+
+  private aplicarFiltros(
+    queryBuilder: SelectQueryBuilder<Empresa>,
+    filter: FiltroDto,
+  ): void {
     if (filter?.nome) {
-      queryBuilder.andWhere('nome LIKE :nome', {
+      queryBuilder.andWhere('empresa.nome LIKE :nome', {
         nome: `%${filter.nome}%`,
       });
     }
-
-    return (await queryBuilder.getMany()).map((i) =>
-      plainToClass(EmpresaDto, i),
-    );
   }
 
   async obterPorId(id: number): Promise<any> {

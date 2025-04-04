@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -14,7 +14,7 @@ import { TaskModule } from './modules/tasks/task.module';
 import { FuncionarioModule } from './modules/funcionarios/funcionario.module';
 import { join } from 'path';
 import { StripeModule } from './modules/stripe/stripe.module';
-import { EmailModule } from './modules/email/email.module';
+import { ContextModule } from './common/storage/context.module';
 
 @Module({
   imports: [
@@ -36,6 +36,7 @@ import { EmailModule } from './modules/email/email.module';
       inject: [ConfigService],
     }),
     EventEmitterModule.forRoot(),
+    ContextModule,
     HashModule,
     UsuarioModule,
     AutenticacaoModule,

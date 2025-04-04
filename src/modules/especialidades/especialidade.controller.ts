@@ -7,13 +7,18 @@ import {
   Post,
   Put,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AuthGuard } from '../../common/guards/auth.guard';
 import { EspecialidadeService } from './especialidade.service';
 import { EspecialidadeDto } from './dtos/especialidade.dto';
 import { Especialidade } from './entities/especialidade.entity';
-import { FiltroDto } from 'src/common/dtos/filter.dto';
+import { FiltroDto } from 'src/common/dtos/filtro.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { ContextInterceptor } from 'src/common/interceptors/context.interceptor';
 
+@ApiBearerAuth('JWT-auth')
+@UseInterceptors(ContextInterceptor)
 @Controller('especialidades')
 export class EspecialidadeController {
   constructor(private readonly especialidadeService: EspecialidadeService) {}

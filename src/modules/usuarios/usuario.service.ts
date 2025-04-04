@@ -4,16 +4,17 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeepPartial, Repository } from 'typeorm';
+import { DeepPartial, Repository, SelectQueryBuilder } from 'typeorm';
 import { HashService } from '../hash/hash.service';
 import { UsuarioDto } from './dtos/usuario.dto';
-import { UsuarioFiltroDto } from './dtos/usuario.filter.dto';
+import { UsuarioFiltroDto } from './dtos/usuario-filtro.dto';
 import { Role } from 'src/common/constants/roles';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { BaseService } from 'src/common/services/base.service';
 import { Usuario } from './entities/usuario.entity';
-import { plainToClass } from 'class-transformer';
+import { plainToInstance } from 'class-transformer';
 import { EmpresaService } from '../empresas/empresa.service';
+import { Context } from 'src/common/storage/context';
 
 @Injectable()
 export class UsuarioService extends BaseService {
@@ -23,8 +24,9 @@ export class UsuarioService extends BaseService {
     private hashService: HashService,
     private eventEmitter: EventEmitter2,
     private empresaService: EmpresaService,
+    protected context: Context,
   ) {
-    super();
+    super(context);
   }
 
   async criar(request: UsuarioDto): Promise<any> {
@@ -103,25 +105,40 @@ export class UsuarioService extends BaseService {
   }
 
   async obterTodos(filter: UsuarioFiltroDto): Promise<UsuarioDto[]> {
-    const queryBuilder = this.usuarioRepository.createQueryBuilder('usuario');
+    const queryBuilder = this.usuarioRepository
+      .createQueryBuilder('usuario')
+      .select([
+        'usuario.id',
+        'usuario.nome',
+        'usuario.email',
+        'usuario.isAtivo',
+        'usuario.empresaId',
+      ])
+      .where('usuario.empresaId = :empresaId', {
+        empresaId: this.getEmpresaId(),
+      });
 
-    queryBuilder.select(['id', 'nme', 'email', 'isAtivo']);
+    this.aplicarFiltros(queryBuilder, filter);
 
+    const itens = await queryBuilder.getMany();
+    return plainToInstance(UsuarioDto, itens);
+  }
+
+  private aplicarFiltros(
+    queryBuilder: SelectQueryBuilder<Usuario>,
+    filter: UsuarioFiltroDto,
+  ): void {
     if (filter?.nome) {
-      queryBuilder.where('usuario.nome LIKE :nome', {
+      queryBuilder.andWhere('usuario.nome LIKE :nome', {
         nome: `%${filter.nome}%`,
       });
     }
 
     if (filter?.isAtivo !== undefined) {
-      queryBuilder.where({ isAtivo: filter.isAtivo });
+      queryBuilder.andWhere('usuario.isAtivo = :isAtivo', {
+        isAtivo: filter.isAtivo,
+      });
     }
-
-    queryBuilder.where({ empresaId: this.getempresaId() });
-
-    return (await queryBuilder.getMany()).map((i) =>
-      plainToClass(UsuarioDto, i),
-    );
   }
 
   async obterPorId(id: number): Promise<any> {
