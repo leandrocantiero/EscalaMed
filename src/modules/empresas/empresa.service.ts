@@ -8,10 +8,11 @@ import { Repository, SelectQueryBuilder } from 'typeorm';
 import { FiltroDto } from 'src/common/dtos/filtro.dto';
 import { Empresa } from './entities/empresa.entity';
 import { EmpresaDto } from './dtos/empresa.dto';
-import { plainToClass, plainToInstance } from 'class-transformer';
+import { plainToInstance } from 'class-transformer';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Context } from 'src/common/storage/context';
 import { BaseService } from 'src/common/services/base.service';
+import Stripe from 'stripe';
 
 @Injectable()
 export class EmpresaService extends BaseService {
@@ -82,7 +83,7 @@ export class EmpresaService extends BaseService {
   async obterPorId(id: number): Promise<any> {
     const empresa = await this.empresaRepository.findOneBy({ id });
     if (!empresa) {
-      return new NotFoundException('Empresa não encontrada');
+      throw new NotFoundException('Empresa não encontrada');
     }
 
     return empresa;
@@ -94,5 +95,16 @@ export class EmpresaService extends BaseService {
 
   async remover(id: number): Promise<void> {
     await this.empresaRepository.delete(id);
+  }
+
+  async salvarDadosStripe(empresa: Empresa, clienteStripe: Stripe.Customer) {
+    const dados = {
+      stripeCustomerId: clienteStripe.id,
+    };
+
+    console.log('salvarDadosStripe', dados);
+
+    this.empresaRepository.merge(empresa, dados);
+    return await this.empresaRepository.save(empresa);
   }
 }

@@ -6,85 +6,69 @@ import {
   Res,
   BadRequestException,
   UseGuards,
+  HttpCode,
+  Headers,
+  RawBodyRequest,
 } from '@nestjs/common';
 import { StripeService } from './stripe.service';
 import { AuthGuard } from 'src/common/guards/auth.guard';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { StripeDto } from './dtos/stripe.dto';
+import { EmpresaService } from '../empresas/empresa.service';
+import Stripe from 'stripe';
 
-@Controller('payments')
-export class PaymentsController {
-  constructor(private readonly stripeService: StripeService) {}
+@ApiBearerAuth('JWT-auth')
+@Controller('pagamentos')
+export class StripeController {
+  constructor(
+    private readonly stripeService: StripeService,
+    private readonly empresaService: EmpresaService,
+  ) {}
 
-  @UseGuards(AuthGuard)
-  @Post('create-checkout-session')
-  async createCheckoutSession(
-    @Body() body: { customerId: string; priceId: string },
-  ) {
-    const session = await this.stripeService.createCheckoutSession(
-      body.customerId,
-      body.priceId,
+  // @UseGuards(AuthGuard)
+  @Post('criar-sessao-checkout')
+  async criarSessaoCheckout(@Body() request: StripeDto) {
+    let empresa = await this.empresaService.obterPorId(request.empresaId);
+    if (!empresa) {
+      throw new BadRequestException('Empresa não encontrada');
+    }
+
+    if (!empresa.stripeCustomerId) {
+      const clienteCriado = await this.stripeService.criarCliente(empresa);
+      console.log('clienteCriado', clienteCriado);
+      empresa = await this.empresaService.salvarDadosStripe(
+        empresa,
+        clienteCriado,
+      );
+    }
+
+    console.log('empresa', empresa);
+
+    const sessao = await this.stripeService.criarSessaoCheckout(
+      empresa.stripeCustomerId,
+      request.priceId,
     );
-    return { url: session.url };
+
+    return { sessao };
   }
 
   @Post('webhook')
-  handleWebhook(@Req() req, @Res() res) {
-    const sig = req.headers['stripe-signature'];
-    let event;
-
+  async handleWebhook(
+    @Req() req: RawBodyRequest<Request>,
+    @Headers('stripe-signature') sig: string,
+  ): Promise<any> {
     try {
-      event = this.stripeService.constructEvent(
+      const event = this.stripeService.constructEvent(
         req.rawBody,
         sig,
         process.env.STRIPE_WEBHOOK_SECRET ?? '',
       );
+
+      await this.stripeService.webhook(event);
+      return 'ok';
     } catch (err) {
+      console.log(err);
       throw new BadRequestException(`Webhook Error: ${err.message}`);
     }
-
-    let subscription;
-    let status;
-
-    // Handle the event
-    switch (event.type) {
-      case 'customer.subscription.trial_will_end':
-        subscription = event.data.object;
-        status = subscription.status;
-        console.log(`Subscription status is ${status}.`);
-        // Then define and call a method to handle the subscription trial ending.
-        // handleSubscriptionTrialEnding(subscription);
-        break;
-      case 'customer.subscription.deleted':
-        subscription = event.data.object;
-        status = subscription.status;
-        console.log(`Subscription status is ${status}.`);
-        // Then define and call a method to handle the subscription deleted.
-        // handleSubscriptionDeleted(subscriptionDeleted);
-        break;
-      case 'customer.subscription.created':
-        subscription = event.data.object;
-        status = subscription.status;
-        console.log(`Subscription status is ${status}.`);
-        // Then define and call a method to handle the subscription created.
-        // handleSubscriptionCreated(subscription);
-        break;
-      case 'customer.subscription.updated':
-        subscription = event.data.object;
-        status = subscription.status;
-        console.log(`Subscription status is ${status}.`);
-        // Then define and call a method to handle the subscription update.
-        // handleSubscriptionUpdated(subscription);
-        break;
-      case 'entitlements.active_entitlement_summary.updated':
-        subscription = event.data.object;
-        console.log(`Active entitlement summary updated for ${subscription}.`);
-        // Then define and call a method to handle active entitlement summary updated
-        // handleEntitlementUpdated(subscription);
-        break;
-      default:
-        // Unexpected event type
-        console.log(`Unhandled event type ${event.type}.`);
-    }
-
-    res.json({ received: true });
   }
 }

@@ -23,24 +23,24 @@ export class EspecialidadeService extends BaseService {
   }
 
   async criar(request: EspecialidadeDto): Promise<Especialidade> {
-    if (await this.obterPorNome(request.nome)) {
+    if (await this.obterPorNome(request.nome, this.getEmpresaId())) {
       throw new BadRequestException('Especialidade já cadastrada');
     }
 
-    const speciality = this.especialidadeRepository.create(request);
-    return await this.especialidadeRepository.save(speciality);
+    const especialidade = this.especialidadeRepository.create(request);
+    return await this.especialidadeRepository.save(especialidade);
   }
 
   async editar(id: number, request: EspecialidadeDto): Promise<any> {
-    const speciality = await this.obterPorId(id);
-    if (!speciality) {
+    const especialidade = await this.obterPorId(id);
+    if (!especialidade) {
       throw new BadRequestException(
         `Especialidade com o ID: ${id} não encontrada`,
       );
     }
 
-    this.especialidadeRepository.merge(speciality as Especialidade, request);
-    return await this.especialidadeRepository.save(speciality);
+    this.especialidadeRepository.merge(especialidade as Especialidade, request);
+    return await this.especialidadeRepository.save(especialidade);
   }
 
   async obterTodos(filter: FiltroDto): Promise<EspecialidadeDto[]> {
@@ -74,16 +74,20 @@ export class EspecialidadeService extends BaseService {
   }
 
   async obterPorId(id: number): Promise<any> {
-    const speciality = await this.especialidadeRepository.findOneBy({ id });
-    if (!speciality) {
-      return new NotFoundException('Especialidade não encontrada');
+    const especialidade = await this.especialidadeRepository.findOneBy({ id });
+    if (!especialidade) {
+      throw new NotFoundException('Especialidade não encontrada');
     }
 
-    return speciality;
+    return especialidade;
   }
 
-  async obterPorNome(nome: string): Promise<Especialidade | null> {
-    return this.especialidadeRepository.findOneBy({ nome });
+  async obterPorNome(
+    nome: string,
+    empresaId: number | undefined,
+  ): Promise<Especialidade | null> {
+    console.log(empresaId);
+    return this.especialidadeRepository.findOneBy({ nome, empresaId });
   }
 
   async remover(id: number): Promise<void> {

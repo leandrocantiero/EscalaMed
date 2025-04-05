@@ -8,6 +8,7 @@ import * as compression from 'compression';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: ['error', 'warn', 'fatal'],
+    rawBody: true,
   });
 
   const config = new DocumentBuilder()

@@ -1,13 +1,6 @@
 import { IsEmail, IsUrl } from 'class-validator';
 import { BaseEntity } from 'src/common/entities/base.entity';
-import { Usuario } from 'src/modules/usuarios/entities/usuario.entity';
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  OneToMany,
-  OneToOne,
-} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
 @Entity('empresa')
 export class Empresa extends BaseEntity {
@@ -73,13 +66,7 @@ export class Empresa extends BaseEntity {
   @Column({ type: 'boolean', default: false })
   isIncentivoCultural: boolean;
 
-  // Relacionamentos
-  @OneToMany(() => Usuario, (item) => item.empresaId)
-  usuarios?: Usuario[];
-
-  @OneToOne(() => Usuario, (item) => item.id)
-  createdBy?: Usuario;
-
-  @OneToOne(() => Usuario, (item) => item.id)
-  updatedBy?: Usuario;
+  // Dados financeiros
+  @Column({ type: 'varchar', nullable: true })
+  stripeCustomerId?: string;
 }

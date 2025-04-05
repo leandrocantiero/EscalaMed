@@ -1,4 +1,5 @@
 import { BaseEntity } from 'src/common/entities/base.entity';
+import { Empresa } from 'src/modules/empresas/entities/empresa.entity';
 import { Especialidade } from 'src/modules/especialidades/entities/especialidade.entity';
 import {
   Entity,
@@ -40,4 +41,8 @@ export class Funcionario extends BaseEntity {
   @ManyToOne(() => Especialidade, (especialidade) => especialidade.funcionarios)
   @JoinColumn({ name: 'specialtyId' })
   especialidade: Especialidade;
+
+  @ManyToOne(() => Empresa, { nullable: false })
+  @JoinColumn({ name: 'empresaId' })
+  empresa: Empresa;
 }

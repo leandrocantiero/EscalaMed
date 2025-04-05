@@ -76,7 +76,7 @@ export class FuncionarioService extends BaseService {
   async obterPorId(id: number): Promise<any> {
     const speciality = await this.funcionarioRepository.findOneBy({ id });
     if (!speciality) {
-      return new NotFoundException('Funcionario não encontrada');
+      throw new NotFoundException('Funcionario não encontrada');
     }
 
     return speciality;

@@ -1,29 +1,39 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, BadRequestException } from '@nestjs/common';
 import Stripe from 'stripe';
+import { Empresa } from '../empresas/entities/empresa.entity';
+import { Exception } from 'handlebars';
 
 @Injectable()
 export class StripeService {
-  constructor(@Inject('STRIPE_CLIENT') private stripe: Stripe) {}
+  constructor(@Inject('STRIPE_CLIENT') private stripe: Stripe) { }
 
-  async getProducts(): Promise<Stripe.Product[]> {
-    const products = await this.stripe.products.list();
+  async obterProdutos(): Promise<Stripe.Product[]> {
+    const products = await this.stripe.products.list({
+      ids: ['prod_S4NH94rzstKcmV'],
+    });
     return products.data;
   }
 
-  async getCustomers(): Promise<Stripe.Customer[]> {
+  async obterClientes(): Promise<Stripe.Customer[]> {
     const customers = await this.stripe.customers.list({});
     return customers.data;
   }
 
-  async createCustomer(email: string, name?: string): Promise<Stripe.Customer> {
+  async obterPrecos(): Promise<Stripe.Price[]> {
+    const prices = await this.stripe.prices.list({});
+    return prices.data;
+  }
+
+  async criarCliente(empresa: Empresa): Promise<Stripe.Customer> {
     const customer = await this.stripe.customers.create({
-      email,
-      name,
+      email: empresa.email,
+      name: empresa.nome,
+      phone: empresa.telefonePrimario ?? '',
     });
     return customer;
   }
 
-  async createSubscription(
+  async criarAssinatura(
     customerId: string,
     priceId: string,
   ): Promise<Stripe.Subscription> {
@@ -37,7 +47,7 @@ export class StripeService {
     return subscription;
   }
 
-  async createCheckoutSession(
+  async criarSessaoCheckout(
     customerId: string,
     priceId: string,
   ): Promise<Stripe.Response<Stripe.Checkout.Session>> {
@@ -51,18 +61,33 @@ export class StripeService {
         },
       ],
       mode: 'subscription',
-      success_url: `${process.env.FRONTEND_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.FRONTEND_URL}/canceled`,
+      success_url: `${process.env.CLIENT_URL}/checkout-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.CLIENT_URL}/checkout-canceled`,
     });
 
     return checkout;
   }
 
   constructEvent(
-    payload: Buffer,
+    payload: Buffer | undefined,
     signature: string,
     secret: string,
   ): Stripe.Event {
+    if (!payload) {
+      throw new BadRequestException('Payload do evento não encontrado');
+    }
+
     return this.stripe.webhooks.constructEvent(payload, signature, secret);
+  }
+
+  async webhook(event: Stripe.Event) {
+    switch (event.type) {
+      case 'payment_intent.created':
+        break;
+      case 'payment_intent.succeeded':
+        break;
+      default:
+        throw new BadRequestException('Evento não suportado');
+    }
   }
 }

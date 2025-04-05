@@ -17,10 +17,17 @@ export class ContextInterceptor implements NestInterceptor {
     next: CallHandler,
   ): Observable<any> | Promise<Observable<any>> {
     const request = executionContext.switchToHttp().getRequest();
+    const usuario = request['usuario'];
 
-    const store: StorageDto = {
-      usuario: request['usuario'],
-    };
+    if (
+      usuario?.empresaId &&
+      typeof request.body === 'object' &&
+      request.body !== null
+    ) {
+      request.body.empresaId = usuario.empresaId;
+    }
+
+    const store: StorageDto = { usuario };
 
     return new Observable((observer) => {
       this.context.runWith(store, () => {
