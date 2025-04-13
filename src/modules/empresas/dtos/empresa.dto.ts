@@ -37,7 +37,7 @@ export class EmpresaDto {
   email: string;
 
   @IsNotEmpty()
-  @IsPhoneNumber()
+  @IsPhoneNumber('BR')
   @ApiProperty()
   telefonePrimario: string;
 }

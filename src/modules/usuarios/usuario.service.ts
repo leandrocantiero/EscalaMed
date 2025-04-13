@@ -8,7 +8,7 @@ import { DeepPartial, Repository, SelectQueryBuilder } from 'typeorm';
 import { HashService } from '../hash/hash.service';
 import { UsuarioDto } from './dtos/usuario.dto';
 import { UsuarioFiltroDto } from './dtos/usuario-filtro.dto';
-import { Role } from 'src/common/constants/roles';
+import { Role } from 'src/common/constants/roles.enum';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { BaseService } from 'src/common/services/base.service';
 import { Usuario } from './entities/usuario.entity';
@@ -104,7 +104,7 @@ export class UsuarioService extends BaseService {
     return await this.usuarioRepository.save(usuario);
   }
 
-  async obterTodos(filter: UsuarioFiltroDto): Promise<UsuarioDto[]> {
+  async obterTodos(filtro: UsuarioFiltroDto): Promise<UsuarioDto[]> {
     const queryBuilder = this.usuarioRepository
       .createQueryBuilder('usuario')
       .select([
@@ -118,7 +118,7 @@ export class UsuarioService extends BaseService {
         empresaId: this.getEmpresaId(),
       });
 
-    this.aplicarFiltros(queryBuilder, filter);
+    this.aplicarFiltros(queryBuilder, filtro);
 
     const itens = await queryBuilder.getMany();
     return plainToInstance(UsuarioDto, itens);
@@ -126,17 +126,17 @@ export class UsuarioService extends BaseService {
 
   private aplicarFiltros(
     queryBuilder: SelectQueryBuilder<Usuario>,
-    filter: UsuarioFiltroDto,
+    filtro: UsuarioFiltroDto,
   ): void {
-    if (filter?.nome) {
+    if (filtro?.busca) {
       queryBuilder.andWhere('usuario.nome LIKE :nome', {
-        nome: `%${filter.nome}%`,
+        nome: `%${filtro.busca}%`,
       });
     }
 
-    if (filter?.isAtivo !== undefined) {
+    if (filtro?.isAtivo !== undefined) {
       queryBuilder.andWhere('usuario.isAtivo = :isAtivo', {
-        isAtivo: filter.isAtivo,
+        isAtivo: filtro.isAtivo,
       });
     }
   }

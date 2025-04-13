@@ -10,7 +10,7 @@ import { StorageDto } from '../storage/dtos/storage.dto';
 
 @Injectable()
 export class ContextInterceptor implements NestInterceptor {
-  constructor(private context: Context) {}
+  constructor(private context: Context) { }
 
   intercept(
     executionContext: ExecutionContext,

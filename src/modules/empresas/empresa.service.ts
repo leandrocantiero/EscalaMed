@@ -52,7 +52,7 @@ export class EmpresaService extends BaseService {
     return await this.empresaRepository.save(empresa);
   }
 
-  async obterTodos(filter: FiltroDto): Promise<EmpresaDto[]> {
+  async obterTodos(filtro: FiltroDto): Promise<EmpresaDto[]> {
     const queryBuilder = this.empresaRepository
       .createQueryBuilder('empresa')
       .select([
@@ -63,7 +63,7 @@ export class EmpresaService extends BaseService {
         'empresa.empresaId',
       ]);
 
-    this.aplicarFiltros(queryBuilder, filter);
+    this.aplicarFiltros(queryBuilder, filtro);
 
     const itens = await queryBuilder.getMany();
     return plainToInstance(EmpresaDto, itens);
@@ -71,11 +71,11 @@ export class EmpresaService extends BaseService {
 
   private aplicarFiltros(
     queryBuilder: SelectQueryBuilder<Empresa>,
-    filter: FiltroDto,
+    filtro: FiltroDto,
   ): void {
-    if (filter?.nome) {
+    if (filtro?.busca) {
       queryBuilder.andWhere('empresa.nome LIKE :nome', {
-        nome: `%${filter.nome}%`,
+        nome: `%${filtro.busca}%`,
       });
     }
   }
@@ -97,13 +97,11 @@ export class EmpresaService extends BaseService {
     await this.empresaRepository.delete(id);
   }
 
-  async salvarDadosStripe(empresa: Empresa, clienteStripe: Stripe.Customer) {
-    const dados = {
-      stripeCustomerId: clienteStripe.id,
-    };
+  async obterPorIdStripe(id: string): Promise<Empresa | null> {
+    return this.empresaRepository.findOneBy({ stripeClienteId: id });
+  }
 
-    console.log('salvarDadosStripe', dados);
-
+  async salvarDadosStripe(empresa: Empresa, dados: any) {
     this.empresaRepository.merge(empresa, dados);
     return await this.empresaRepository.save(empresa);
   }

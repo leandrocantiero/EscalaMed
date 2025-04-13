@@ -21,7 +21,7 @@ import { ContextInterceptor } from 'src/common/interceptors/context.interceptor'
 @UseInterceptors(ContextInterceptor)
 @Controller('funcionarios')
 export class FuncionarioController {
-  constructor(private readonly funcionarioService: FuncionarioService) {}
+  constructor(private readonly funcionarioService: FuncionarioService) { }
 
   @UseGuards(AuthGuard)
   @Post('/criar')

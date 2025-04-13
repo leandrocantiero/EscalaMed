@@ -10,7 +10,7 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
-import { Role } from 'src/common/constants/roles';
+import { Role } from 'src/common/constants/roles.enum';
 import { IsCPF } from 'src/common/decorators/is-cpf.decorator';
 import { EmpresaDto } from 'src/modules/empresas/dtos/empresa.dto';
 

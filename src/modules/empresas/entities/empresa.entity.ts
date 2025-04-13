@@ -68,5 +68,23 @@ export class Empresa extends BaseEntity {
 
   // Dados financeiros
   @Column({ type: 'varchar', nullable: true })
-  stripeCustomerId?: string;
+  stripeClienteId?: string;
+
+  @Column({ type: 'boolean', default: false })
+  stripeAssinaturaAtiva?: boolean;
+
+  @Column({ type: 'datetime', nullable: true })
+  stripeDataUltimoPagamento?: string;
+
+  @Column({ type: 'integer', default: 0 })
+  stripeFalhasPagamento: number;
+
+  @Column({ type: 'boolean', default: false })
+  stripeFaturaAberta: boolean;
+
+  @Column({ type: 'varchar', nullable: true })
+  stripeLinkFatura?: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  stripeLinkFaturaPdf?: string;
 }

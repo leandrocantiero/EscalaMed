@@ -14,7 +14,7 @@ import { UsuarioService } from 'src/modules/usuarios/usuario.service';
 import { UsuarioDto } from './dtos/usuario.dto';
 import { UsuarioFiltroDto } from './dtos/usuario-filtro.dto';
 import { AuthGuard } from '../../common/guards/auth.guard';
-import { Role } from 'src/common/constants/roles';
+import { Role } from 'src/common/constants/roles.enum';
 import { FileInterceptor } from '@nestjs/platform-express';
 import multerConfig from 'src/config/multer-config';
 import { ApiBearerAuth } from '@nestjs/swagger';
@@ -24,7 +24,7 @@ import { ContextInterceptor } from 'src/common/interceptors/context.interceptor'
 @UseInterceptors(ContextInterceptor)
 @Controller('usuarios')
 export class UsuarioController {
-  constructor(private readonly usuarioService: UsuarioService) {}
+  constructor(private readonly usuarioService: UsuarioService) { }
 
   @UseGuards(AuthGuard)
   @Post('/criar')

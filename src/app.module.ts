@@ -15,6 +15,7 @@ import { FuncionarioModule } from './modules/funcionarios/funcionario.module';
 import { join } from 'path';
 import { StripeModule } from './modules/stripe/stripe.module';
 import { ContextModule } from './common/storage/context.module';
+import { EscalaModule } from './modules/escalas/escala.module';
 
 @Module({
   imports: [
@@ -42,10 +43,11 @@ import { ContextModule } from './common/storage/context.module';
     AutenticacaoModule,
     EspecialidadeModule,
     FuncionarioModule,
+    EscalaModule,
     TaskModule,
     StripeModule,
   ],
   controllers: [AppController],
   exports: [AppModule, UsuarioModule, AutenticacaoModule, HashModule],
 })
-export class AppModule {}
+export class AppModule { }

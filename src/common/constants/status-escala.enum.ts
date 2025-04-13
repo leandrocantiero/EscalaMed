@@ -1,0 +1,6 @@
+export enum StatusEscalaEnum {
+    AGENDADA = 'AGENDADA',
+    CONFIRMADA = 'CONFIRMADA',
+    REALIZADA = 'REALIZADA',
+    CANCELADA = 'CANCELADA',
+}

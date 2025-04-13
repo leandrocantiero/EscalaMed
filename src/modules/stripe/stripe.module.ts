@@ -4,6 +4,7 @@ import Stripe from 'stripe';
 import { StripeService } from './stripe.service';
 import { StripeController } from './stripe.controller';
 import { EmpresaModule } from '../empresas/empresa.module';
+import { EventosService } from './stripe-eventos.service';
 
 @Module({
   imports: [ConfigModule, EmpresaModule],
@@ -19,8 +20,9 @@ import { EmpresaModule } from '../empresas/empresa.module';
       inject: [ConfigService],
     },
     StripeService,
+    EventosService,
   ],
   controllers: [StripeController],
-  exports: [StripeService],
+  exports: [StripeService, EventosService],
 })
-export class StripeModule {}
+export class StripeModule { }

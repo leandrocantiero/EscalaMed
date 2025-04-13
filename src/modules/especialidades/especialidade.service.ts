@@ -43,7 +43,7 @@ export class EspecialidadeService extends BaseService {
     return await this.especialidadeRepository.save(especialidade);
   }
 
-  async obterTodos(filter: FiltroDto): Promise<EspecialidadeDto[]> {
+  async obterTodos(filtro: FiltroDto): Promise<EspecialidadeDto[]> {
     const queryBuilder = this.especialidadeRepository
       .createQueryBuilder('especialiadade')
       .select([
@@ -56,7 +56,7 @@ export class EspecialidadeService extends BaseService {
         empresaId: this.getEmpresaId(),
       });
 
-    this.aplicarFiltros(queryBuilder, filter);
+    this.aplicarFiltros(queryBuilder, filtro);
 
     const itens = await queryBuilder.getMany();
     return plainToInstance(EspecialidadeDto, itens);
@@ -64,11 +64,11 @@ export class EspecialidadeService extends BaseService {
 
   private aplicarFiltros(
     queryBuilder: SelectQueryBuilder<Especialidade>,
-    filter: FiltroDto,
+    filtro: FiltroDto,
   ): void {
-    if (filter?.nome) {
+    if (filtro?.busca) {
       queryBuilder.andWhere('especialiadade.nome LIKE :nome', {
-        nome: `%${filter.nome}%`,
+        nome: `%${filtro.busca}%`,
       });
     }
   }
